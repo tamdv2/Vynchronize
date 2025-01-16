@@ -18,7 +18,9 @@ var given_room = ""
 
 app.use(express.static(__dirname + '/'));
 
-server.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 3000, '0.0.0.0', () => {
+    console.log('App running on http://0.0.0.0:3000');
+});
 console.log('Server Started . . .');
 
 
