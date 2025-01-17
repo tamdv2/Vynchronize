@@ -2,30 +2,21 @@ let localStream;
 let peerConnections = {};
 
 // Capture local video/audio
-const message = document.querySelector('div.conga')
-navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+navigator.mediaDevices.getUserMedia({ audio: true })
     .then((stream) => {
         localStream = stream;
         const localVideo = document.getElementById('localVideo');
         localVideo.srcObject = stream;
-        message.textContent = 'Hello, this is a custom alert!';
     })
-    .catch((error) => {
-        console.error('Error accessing media devices.', error)
-        message.textContent = 'ErrorErrorErrorError!';
-    });
+    .catch((error) => console.error('Error accessing media devices:', error));
 
-// Join a room
-const roomId = 'example-room'; // Replace with dynamic room logic
-socket.emit('join', roomId);
-
-// Listen for new users
+// Listen for other users joining the room
 socket.on('user-joined', (userId) => {
     console.log('New user joined:', userId);
     createOffer(userId);
 });
 
-// Listen for signaling data
+// Handle signaling data
 socket.on('signal', async ({ from, signal }) => {
     if (signal.type === 'offer') {
         await createAnswer(from, signal);
@@ -60,11 +51,11 @@ async function createAnswer(userId, offer) {
     socket.emit('signal', { to: userId, signal: answer });
 }
 
-// Create a peer connection
+// Create a new peer connection
 function createPeerConnection(userId) {
     const peerConnection = new RTCPeerConnection();
 
-    // Add local stream tracks
+    // Add local tracks
     localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
 
     // Send ICE candidates to the other peer
@@ -74,17 +65,32 @@ function createPeerConnection(userId) {
         }
     };
 
-    // Add remote tracks to the video element
+    // Handle remote tracks
     peerConnection.ontrack = (event) => {
-        const remoteVideo = document.getElementById(`remoteVideo-${userId}`);
-        if (!remoteVideo) {
-            const video = document.createElement('video');
-            video.id = `remoteVideo-${userId}`;
-            video.autoplay = true;
-            video.srcObject = new MediaStream([event.track]);
-            document.body.appendChild(video);
-        }
+        const video = document.getElementById(`remoteVideo-${userId}`) || createRemoteVideo(userId);
+        video.srcObject = event.streams[0];
     };
 
     return peerConnection;
 }
+
+// Create a video element for remote users
+function createRemoteVideo(userId) {
+    const remoteVideos = document.getElementById('remoteVideos');
+    const video = document.createElement('video');
+    video.id = `remoteVideo-${userId}`;
+    video.autoplay = true;
+    remoteVideos.appendChild(video);
+    return video;
+}
+
+// Handle user disconnection
+socket.on('user-left', (userId) => {
+    console.log('User left:', userId);
+    if (peerConnections[userId]) {
+        peerConnections[userId].close();
+        delete peerConnections[userId];
+        const video = document.getElementById(`remoteVideo-${userId}`);
+        if (video) video.remove();
+    }
+});

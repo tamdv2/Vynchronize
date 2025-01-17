@@ -129,7 +129,7 @@ io.sockets.on('connection', function(socket) {
     // ------------------------------------------------------------------------
     // New room
     socket.on('new room', function(data, callback) {
-        //callback(true);
+        callback(true);
         // Roomnum passed through
         socket.roomnum = data;
 
@@ -754,12 +754,12 @@ io.sockets.on('connection', function(socket) {
 
     // New User
     socket.on('new user', function(data, callback) {
-        callback(true);
         // Data is username
         var encodedUser = data.replace(/</g, "&lt;").replace(/>/g, "&gt;");
         socket.username = encodedUser;
         //console.log(socket.username)
         users.push(socket.username);
+        callback(encodedUser);
         updateUsernames();
     });
 
@@ -925,6 +925,27 @@ io.sockets.on('connection', function(socket) {
                 console.error(err);
             }
         );
+    });
+
+    //-------------------------------------------------------------------------------
+
+    // Forward signaling data to the target peer
+    socket.on('signal', (data) => {
+        const { to, signal } = data;
+        io.to(to).emit('signal', { from: socket.id, signal });
+    });
+
+    // Notify room of a new user
+    socket.on('join', (roomId) => {
+        console.log('[media]joined', roomId)
+        socket.join(roomId);
+        socket.to(roomId).emit('user-joined', socket.id);
+    });
+
+    // Handle disconnection
+    socket.on('disconnect-call', () => {
+        console.log('User disconnected:', socket.id);
+        socket.broadcast.emit('user-left', socket.id);
     });
 
 

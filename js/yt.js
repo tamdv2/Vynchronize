@@ -9,17 +9,7 @@ var player;
 var playerStatus = -1;
 
 function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-        playerVars: {
-            autoplay: 0,
-            rel: 0,
-            controls: 1
-        },
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
+    player = new YT.Player('player');
     // document.getElementById('player').src = document.getElementById('player').src + '&controls=0'
     console.log(document.getElementById('player').src)
 }

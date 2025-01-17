@@ -108,6 +108,7 @@
                     <div class="form-group">
                         <p style="color:red; margin-bottom: 0px" id="missinginfo"></p>
                         <label>Enter Name</label>
+                        <div class="conga"></div>
                         <input class="form-control" id="username" />
                         <br />
                         <p style="color:red; margin-bottom: 0px" id="missinginfo2"></p>
@@ -310,6 +311,7 @@
                     </div>
                     <div>
                         <video id="localVideo" autoplay muted></video>
+                        <div id="remoteVideos"></div>
                     </div>
                 </div>
                 <!-- /.col-md-4 -->
@@ -529,7 +531,13 @@
                 } else {
                     username = $username.val()
                     socket.emit('new user', $username.val(), function(data) {
+                        console.log('[Media] gaaaaaaa:', data);
                         if (data) {
+                            // socket.emit('user-joined', data, function(joinedData) {
+                            //     console.log('[Media] New user joined:', joinedData);
+                            // });
+                            // Join a room
+
                             $userFormArea.hide();
                             $roomArea.show();
 
@@ -559,6 +567,7 @@
                     });
                     // Join room
                     socket.emit('new room', $roomnum.val(), function(data) {
+                        socket.emit('join', $roomnum.val());
                         // This should only call back if the client is the host
                         if (data) {
                             console.log("Host is syncing the new socket!")
