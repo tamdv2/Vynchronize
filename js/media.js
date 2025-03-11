@@ -2,7 +2,7 @@ let localStream;
 let peerConnections = {};
 
 // Capture local video/audio
-navigator.mediaDevices.getUserMedia({ audio: true })
+navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     .then((stream) => {
         localStream = stream;
         const localVideo = document.getElementById('localVideo');

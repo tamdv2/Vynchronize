@@ -422,3 +422,10 @@
  .hide {
      display: none;
  }
+
+
+ #remoteVideos {
+     video {
+         width: 100%;
+     }
+ }
